@@ -18,21 +18,20 @@
         };
 
         jdk = pkgs.jdk;
-
+        coursier = pkgs.coursier.override { jre = jdk; };
       in {
 
         packages = {
 
           smithy-language-server = let
             version = "0.2.3";
+            pname = "smithy-language-server";
 
             deps = pkgs.stdenv.mkDerivation {
-              #name = "${pname}-deps-${version}";
-              name = "deps";
+              name = "${pname}-deps-${version}";
 
               dontUnpack = true;
-              buildInputs = [ pkgs.jdk pkgs.bash pkgs.coursier ];
-              nativeBuildInputs = [ pkgs.coursier pkgs.bash ];
+              nativeBuildInputs = [ jdk coursier ];
 
               JAVA_HOME = "${jdk}";
               COURSIER_CACHE = "./coursier-cache/v1";
@@ -43,31 +42,45 @@
                 mkdir -p coursier-cache/v1
                 mkdir -p coursier-cache/arc
                 mkdir -p coursier-cache/jvm
-                cs bootstrap software.amazon.smithy:smithy-language-server:${version} -o smithy-language-server
+                cs fetch software.amazon.smithy:smithy-language-server:${version}
               '';
 
               installPhase = ''
-                mkdir -p $out/bin
-                cp smithy-language-server $out/bin
+                mkdir -p $out/coursier-cache
+                cp -R ./coursier-cache $out
               '';
 
               outputHashAlgo = "sha256";
               outputHashMode = "recursive";
-              outputHash = "";
+              outputHash =
+                "sha256-Vat5YIV/cuciUM6anuhMxwFLiQHvofcBszQc0qUlf+A=";
             };
 
           in pkgs.stdenv.mkDerivation rec {
-            pname = "smithy-language-server";
-            version = "0.2.3";
+            inherit pname version;
 
             dontUnpack = true;
 
-            buildInputs = [ deps ];
-            nativeBuildInputs = [ pkgs.makeWrapper ];
+            buildInputs = [ jdk ];
+            nativeBuildInputs = [ pkgs.makeWrapper pkgs.coursier deps ];
+
+            JAVA_HOME = "${jdk}";
+            COURSIER_CACHE = "./coursier-cache/v1";
+            COURSIER_ARCHIVE_CACHE = "./coursier-cache/arc";
+            COURSIER_JVM_CACHE = "./coursier-cache/jvm";
+
+            buildPhase = ''
+              mkdir -p coursier-cache/v1
+              mkdir -p coursier-cache/arc
+              mkdir -p coursier-cache/jvm
+              cs bootstrap software.amazon.smithy:smithy-language-server:${version} \
+                --standalone -o launcher
+            '';
 
             installPhase = ''
               mkdir -p $out/bin
-              makeWrapper ${deps}/bin/smithy-language-server $out/bin/smithy-language-server --set JAVA_HOME ${jdk}
+              cp launcher $out
+              makeWrapper $out/launcher $out/bin/smithy-language-server --set JAVA_HOME ${jdk}
             '';
 
           };
