@@ -19,14 +19,11 @@
 
         jdk = pkgs.jdk;
         coursier = pkgs.coursier.override { jre = jdk; };
-      in {
+        lib = pkgs.lib;
 
-        packages = {
-
-          smithy-language-server = let
-            version = "0.2.3";
-            pname = "smithy-language-server";
-
+        buildCoursierBootstrappedApp = { groupId, artifactId, version
+          , pname ? artifactId, depsHash ? "", javaOpts ? [ ] }:
+          let
             deps = pkgs.stdenv.mkDerivation {
               name = "${pname}-deps-${version}";
 
@@ -40,9 +37,9 @@
 
               buildPhase = ''
                 mkdir -p coursier-cache/v1
-                mkdir -p coursier-cache/arc
-                mkdir -p coursier-cache/jvm
-                cs fetch software.amazon.smithy:smithy-language-server:${version}
+                cs fetch ${groupId}:${artifactId}:${version} \
+                  -r bintray:scalacenter/releases \
+                  -r sonatype:snapshots
               '';
 
               installPhase = ''
@@ -52,8 +49,7 @@
 
               outputHashAlgo = "sha256";
               outputHashMode = "recursive";
-              outputHash =
-                "sha256-Vat5YIV/cuciUM6anuhMxwFLiQHvofcBszQc0qUlf+A=";
+              outputHash = "${depsHash}";
             };
 
           in pkgs.stdenv.mkDerivation rec {
@@ -71,18 +67,58 @@
 
             buildPhase = ''
               mkdir -p coursier-cache/v1
-              mkdir -p coursier-cache/arc
-              mkdir -p coursier-cache/jvm
-              cs bootstrap software.amazon.smithy:smithy-language-server:${version} \
-                --standalone -o launcher
+              cs bootstrap ${groupId}:${artifactId}:${version} --standalone -o launcher
             '';
 
             installPhase = ''
               mkdir -p $out/bin
               cp launcher $out
-              makeWrapper $out/launcher $out/bin/smithy-language-server --set JAVA_HOME ${jdk}
+              makeWrapper $out/launcher $out/bin/${pname} \
+                --set JAVA_HOME ${jdk} \
+                --add-flags "${
+                  lib.strings.concatStringsSep " "
+                  (builtins.map (s: "-J" + s) javaOpts)
+                }"
             '';
 
+          };
+
+      in {
+
+        packages = {
+
+          smithy-language-server = buildCoursierBootstrappedApp {
+            groupId = "software.amazon.smithy";
+            artifactId = "smithy-language-server";
+            version = "0.2.3";
+            depsHash = "sha256-seq2JWZQqd8reMQn+RCe5Q/2RDGlKJKs+kUY5wXU60g=";
+            javaOpts = [
+              "-XX:+UseG1GC"
+              "-XX:+UseStringDeduplication"
+              "-Xss4m"
+              "-Xms100m"
+            ];
+          };
+
+          smithy-cli = buildCoursierBootstrappedApp {
+            groupId = "software.amazon.smithy";
+            artifactId = "smithy-cli";
+            version = "1.39.1";
+            depsHash = "sha256-/8HW7ZhDBOXf6B/dDuqeMRjuE+mRa5hHkb524oqXLO0=";
+          };
+
+          metals = buildCoursierBootstrappedApp {
+            groupId = "org.scalameta";
+            artifactId = "metals_2.13";
+            version = "1.0.1";
+            pname = "metals";
+            depsHash = "sha256-WAQbkBcYxGjWKdC2NZHHYPha9i+b7f+xWO1LVsLkJeI=";
+            javaOpts = [
+              "-XX:+UseG1GC"
+              "-XX:+UseStringDeduplication"
+              "-Xss4m"
+              "-Xms100m"
+            ];
           };
 
         };
