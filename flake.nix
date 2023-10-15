@@ -23,44 +23,51 @@
 
         packages = {
 
-          smithy-language-server = pkgs.stdenv.mkDerivation rec {
-            pname = "smithy-language-server";
+          smithy-language-server = let
             version = "0.2.3";
 
             deps = pkgs.stdenv.mkDerivation {
-              name = "${pname}-deps-${version}";
-              src = ./src;
+              #name = "${pname}-deps-${version}";
+              name = "deps";
 
-              nativeBuildInputs = [ pkgs.coursier ];
+              dontUnpack = true;
+              buildInputs = [ pkgs.jdk pkgs.bash pkgs.coursier ];
+              nativeBuildInputs = [ pkgs.coursier pkgs.bash ];
 
-              SCALA_CLI_HOME = "./scala-cli-home";
+              JAVA_HOME = "${jdk}";
               COURSIER_CACHE = "./coursier-cache/v1";
               COURSIER_ARCHIVE_CACHE = "./coursier-cache/arc";
               COURSIER_JVM_CACHE = "./coursier-cache/jvm";
 
-              # run the same build as our main derivation
-              # to populate the cache with the correct set of dependencies
               buildPhase = ''
-                cs bootstrap software.amazon.smithy:smithy-language-server:${version} \
-                  --standalone -o smithy-language-server
+                mkdir -p coursier-cache/v1
+                mkdir -p coursier-cache/arc
+                mkdir -p coursier-cache/jvm
+                cs bootstrap software.amazon.smithy:smithy-language-server:${version} -o smithy-language-server
               '';
 
               installPhase = ''
-                cp smithy-language-server $out
+                mkdir -p $out/bin
+                cp smithy-language-server $out/bin
               '';
 
               outputHashAlgo = "sha256";
               outputHashMode = "recursive";
-              outputHash =
-                "sha256-hagKQcBvFdrTwSOgrDp78lkgj73iybe9dmynGmjynKI=";
+              outputHash = "";
             };
+
+          in pkgs.stdenv.mkDerivation rec {
+            pname = "smithy-language-server";
+            version = "0.2.3";
+
+            dontUnpack = true;
 
             buildInputs = [ deps ];
             nativeBuildInputs = [ pkgs.makeWrapper ];
 
             installPhase = ''
               mkdir -p $out/bin
-              makeWrapper ${deps}/smithy-language-server $out/bin/smithy-language-server --set JAVA_HOME ${jdk}
+              makeWrapper ${deps}/bin/smithy-language-server $out/bin/smithy-language-server --set JAVA_HOME ${jdk}
             '';
 
           };
