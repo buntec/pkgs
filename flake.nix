@@ -123,6 +123,11 @@
 
         };
 
-      });
+      }) // {
+        overlays.default = final: prev: {
+          inherit (self.packages.${prev.system})
+            smithy-language-server smithy-cli metals;
+        };
+      };
 
 }
