@@ -65,15 +65,17 @@
             COURSIER_ARCHIVE_CACHE = "./coursier-cache/arc";
             COURSIER_JVM_CACHE = "./coursier-cache/jvm";
 
+            launcher = "${pname}-launcher";
+
             buildPhase = ''
               mkdir -p coursier-cache/v1
-              cs bootstrap ${groupId}:${artifactId}:${version} --standalone -o launcher
+              cs bootstrap ${groupId}:${artifactId}:${version} --standalone -o ${launcher}
             '';
 
             installPhase = ''
               mkdir -p $out/bin
-              cp launcher $out
-              makeWrapper $out/launcher $out/bin/${pname} \
+              cp ${launcher} $out
+              makeWrapper $out/${launcher} $out/bin/${pname} \
                 --set JAVA_HOME ${jdk} \
                 --add-flags "${
                   lib.strings.concatStringsSep " "
