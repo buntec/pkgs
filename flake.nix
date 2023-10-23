@@ -61,9 +61,9 @@
             nativeBuildInputs = [ pkgs.makeWrapper pkgs.coursier deps ];
 
             JAVA_HOME = "${jdk}";
-            COURSIER_CACHE = "./coursier-cache/v1";
-            COURSIER_ARCHIVE_CACHE = "./coursier-cache/arc";
-            COURSIER_JVM_CACHE = "./coursier-cache/jvm";
+            COURSIER_CACHE = "${deps}/coursier-cache/v1";
+            COURSIER_ARCHIVE_CACHE = "${deps}/coursier-cache/arc";
+            COURSIER_JVM_CACHE = "${deps}/coursier-cache/jvm";
 
             launcher = "${pname}-launcher";
 
@@ -107,6 +107,14 @@
             artifactId = "smithy-cli";
             version = "1.39.1";
             depsHash = "sha256-/8HW7ZhDBOXf6B/dDuqeMRjuE+mRa5hHkb524oqXLO0=";
+          };
+
+          smithy4s-cli = buildCoursierBootstrappedApp {
+            groupId = "com.disneystreaming.smithy4s";
+            artifactId = "smithy4s-codegen-cli_2.13";
+            version = "0.18.2";
+            pname = "smith4s-cli";
+            depsHash = "sha256-k5940JgN+RQTZLvPfAGwOmGn/9/KGUnq9WUKsGAoiPY=";
           };
 
           metals = buildCoursierBootstrappedApp {
