@@ -93,7 +93,7 @@
             groupId = "software.amazon.smithy";
             artifactId = "smithy-language-server";
             version = "0.2.3";
-            depsHash = "sha256-seq2JWZQqd8reMQn+RCe5Q/2RDGlKJKs+kUY5wXU60g=";
+            depsHash = "sha256-yvBkxcUqAU4A2YlzFfUKYuKasNDZmkRZWRiEUTUphKc=";
             javaOpts = [
               "-XX:+UseG1GC"
               "-XX:+UseStringDeduplication"
