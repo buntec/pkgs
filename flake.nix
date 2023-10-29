@@ -2,94 +2,33 @@
   description = "Some packages I find useful";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-  inputs.devshell.url = "github:numtide/devshell";
-  inputs.flake-utils.url = "github:numtide/flake-utils";
-  inputs.flake-compat = {
-    url = "github:edolstra/flake-compat";
-    flake = false;
-  };
+  inputs.my-nix-utils.url = "github:buntec/nix-utils";
 
-  outputs = { self, flake-utils, devshell, nixpkgs, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [ devshell.overlays.default ];
-        };
+  outputs = { self, nixpkgs, my-nix-utils, ... }:
 
-        jdk = pkgs.jdk;
-        coursier = pkgs.coursier.override { jre = jdk; };
-        lib = pkgs.lib;
+    let
+      inherit (nixpkgs.lib) genAttrs;
 
-        buildCoursierBootstrappedApp = { groupId, artifactId, version
-          , pname ? artifactId, depsHash ? "", javaOpts ? [ ] }:
-          let
-            deps = pkgs.stdenv.mkDerivation {
-              name = "${pname}-deps-${version}";
+      eachSystem = genAttrs [
+        "aarch64-darwin"
+        "aarch64-linux"
+        "x86_64-darwin"
+        "x86_64-linux"
+      ];
 
-              dontUnpack = true;
-              nativeBuildInputs = [ jdk coursier ];
-
-              JAVA_HOME = "${jdk}";
-              COURSIER_CACHE = "./coursier-cache/v1";
-              COURSIER_ARCHIVE_CACHE = "./coursier-cache/arc";
-              COURSIER_JVM_CACHE = "./coursier-cache/jvm";
-
-              buildPhase = ''
-                mkdir -p coursier-cache/v1
-                cs fetch ${groupId}:${artifactId}:${version} \
-                  -r bintray:scalacenter/releases \
-                  -r sonatype:snapshots
-              '';
-
-              installPhase = ''
-                mkdir -p $out/coursier-cache
-                cp -R ./coursier-cache $out
-              '';
-
-              outputHashAlgo = "sha256";
-              outputHashMode = "recursive";
-              outputHash = "${depsHash}";
-            };
-
-          in pkgs.stdenv.mkDerivation rec {
-            inherit pname version;
-
-            dontUnpack = true;
-
-            buildInputs = [ jdk ];
-            nativeBuildInputs = [ pkgs.makeWrapper pkgs.coursier deps ];
-
-            JAVA_HOME = "${jdk}";
-            COURSIER_CACHE = "${deps}/coursier-cache/v1";
-            COURSIER_ARCHIVE_CACHE = "${deps}/coursier-cache/arc";
-            COURSIER_JVM_CACHE = "${deps}/coursier-cache/jvm";
-
-            launcher = "${pname}-launcher";
-
-            buildPhase = ''
-              mkdir -p coursier-cache/v1
-              cs bootstrap ${groupId}:${artifactId}:${version} --standalone -o ${launcher}
-            '';
-
-            installPhase = ''
-              mkdir -p $out/bin
-              cp ${launcher} $out
-              makeWrapper $out/${launcher} $out/bin/${pname} \
-                --set JAVA_HOME ${jdk} \
-                --add-flags "${
-                  lib.strings.concatStringsSep " "
-                  (builtins.map (s: "-J" + s) javaOpts)
-                }"
-            '';
-
+    in {
+      packages = eachSystem (system:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+            overlays = [ ];
           };
 
-      in {
+          buildCoursierApp =
+            pkgs.callPackage my-nix-utils.lib.mkBuildCoursierApp { };
 
-        packages = {
-
-          smithy-language-server = buildCoursierBootstrappedApp {
+        in {
+          smithy-language-server = buildCoursierApp {
             groupId = "software.amazon.smithy";
             artifactId = "smithy-language-server";
             version = "0.2.3";
@@ -102,14 +41,14 @@
             ];
           };
 
-          smithy-cli = buildCoursierBootstrappedApp {
+          smithy-cli = buildCoursierApp {
             groupId = "software.amazon.smithy";
             artifactId = "smithy-cli";
             version = "1.39.1";
             depsHash = "sha256-/8HW7ZhDBOXf6B/dDuqeMRjuE+mRa5hHkb524oqXLO0=";
           };
 
-          smithy4s-cli = buildCoursierBootstrappedApp {
+          smithy4s-cli = buildCoursierApp {
             groupId = "com.disneystreaming.smithy4s";
             artifactId = "smithy4s-codegen-cli_2.13";
             version = "0.18.2";
@@ -117,7 +56,7 @@
             depsHash = "sha256-k5940JgN+RQTZLvPfAGwOmGn/9/KGUnq9WUKsGAoiPY=";
           };
 
-          metals = buildCoursierBootstrappedApp {
+          metals = buildCoursierApp {
             groupId = "org.scalameta";
             artifactId = "metals_2.13";
             version = "1.0.1";
@@ -131,13 +70,15 @@
             ];
           };
 
-        };
+        });
 
-      }) // {
-        overlays.default = final: prev: {
-          inherit (self.packages.${prev.system})
-            smithy-language-server smithy-cli metals;
-        };
+      overlays.default = final: prev: {
+        inherit (self.packages.${prev.system})
+          smithy-language-server smithy-cli smith4s-cli metals;
       };
+
+      checks = self.packages;
+
+    };
 
 }
