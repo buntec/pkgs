@@ -30,7 +30,7 @@
           groupId = "software.amazon.smithy";
           artifactId = "smithy-language-server";
           version = "0.2.3";
-          depsHash = "sha256-yvBkxcUqAU4A2YlzFfUKYuKasNDZmkRZWRiEUTUphKc=";
+          depsHash = "sha256-BmCWWR7OWAPtLjS5cwFQdFJylT3CvQXASbQPWRPloIs=";
           javaOpts = [
             "-XX:+UseG1GC"
             "-XX:+UseStringDeduplication"
