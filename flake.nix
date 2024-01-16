@@ -30,7 +30,7 @@
           groupId = "software.amazon.smithy";
           artifactId = "smithy-language-server";
           version = "0.2.3";
-          depsHash = "sha256-BmCWWR7OWAPtLjS5cwFQdFJylT3CvQXASbQPWRPloIs=";
+          depsHash = "sha256-r+hEvDG1KHcir14IsxDXoPC+ZDUkbPpVl0lNjAjquoI=";
           javaOpts = [
             "-XX:+UseG1GC"
             "-XX:+UseStringDeduplication"
@@ -43,7 +43,7 @@
           groupId = "software.amazon.smithy";
           artifactId = "smithy-cli";
           version = "1.39.1";
-          depsHash = "sha256-/8HW7ZhDBOXf6B/dDuqeMRjuE+mRa5hHkb524oqXLO0=";
+          depsHash = "sha256-YsDv4wUCA3bwUA88CvPOJqInE4AyC3HRDQlHvGbUuW4=";
         };
 
         smithy4s-codegen-cli = buildCoursierApp pkgs {
@@ -51,7 +51,7 @@
           artifactId = "smithy4s-codegen-cli_2.13";
           version = "0.18.2";
           pname = "smithy4s-codegen-cli";
-          depsHash = "sha256-k5940JgN+RQTZLvPfAGwOmGn/9/KGUnq9WUKsGAoiPY=";
+          depsHash = "sha256-QN/5ztcpZKoxBJ1BTpka7rkgBLQDSMdD5Zh4hCtUSJU=";
         };
 
         metals = buildCoursierApp pkgs {
@@ -59,7 +59,7 @@
           artifactId = "metals_2.13";
           version = "1.0.1";
           pname = "metals";
-          depsHash = "sha256-WAQbkBcYxGjWKdC2NZHHYPha9i+b7f+xWO1LVsLkJeI=";
+          depsHash = "sha256-2Y6u4hcV4o/4Fwi8mDbAQVlQ6yptRaAcB6BJ6oRPpkM=";
           javaOpts = [
             "-XX:+UseG1GC"
             "-XX:+UseStringDeduplication"
