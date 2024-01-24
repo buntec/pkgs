@@ -1,15 +1,15 @@
 {
   "nodes": {
-    "my-nix-utils": {
+    "nix-utils": {
       "inputs": {
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1698591983,
-        "narHash": "sha256-yEn0z33oI31RVHKmBasAhlIHNj3fTI4i0SEcl6M02ec=",
+        "lastModified": 1706102859,
+        "narHash": "sha256-ctvhnbK1XSUNPUldtsN6KhJyvxssa2Pgtj9NZuj1xTU=",
         "owner": "buntec",
         "repo": "nix-utils",
-        "rev": "81957767a9e397bfe592951c1131f9d264c12068",
+        "rev": "6f97aa12b687532a550a485fcc34af8e3ce99795",
         "type": "github"
       },
       "original": {
@@ -52,7 +52,7 @@
     },
     "root": {
       "inputs": {
-        "my-nix-utils": "my-nix-utils",
+        "nix-utils": "nix-utils",
         "nixpkgs": "nixpkgs_2"
       }
     }
