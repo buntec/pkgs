@@ -7,6 +7,7 @@
   outputs = { self, nixpkgs, nix-utils, ... }:
 
     let
+      inherit (nixpkgs) lib;
       inherit (nixpkgs.lib) genAttrs;
 
       eachSystem = genAttrs [
@@ -88,7 +89,10 @@
         in builtins.mapAttrs (_: value: mkApp { drv = value; })
         (mkPackages pkgs));
 
-      overlays.default = final: _: mkPackages final;
+      overlays.default = lib.composeManyExtensions [
+        nix-utils.overlays.default
+        (final: _: mkPackages final)
+      ];
 
       checks = self.packages;
 
