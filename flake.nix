@@ -57,9 +57,9 @@
         metals = pkgs.buildCoursierApp {
           groupId = "org.scalameta";
           artifactId = "metals_2.13";
-          version = "1.2.0";
+          version = "1.2.1";
           pname = "metals";
-          depsHash = "sha256-Izm9VVFOzHDecKlNlFmmE2rSCm7mus1QT3WfB/7ZryQ=";
+          depsHash = "sha256-xPdOBV5AnWepWYQFFMJ1KNBB8zpHllyBpUWWQp6/KBM=";
           javaOpts = [
             "-XX:+UseG1GC"
             "-XX:+UseStringDeduplication"
